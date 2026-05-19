@@ -1,0 +1,32 @@
+# level1.txt
+# Arms: 6 values (0/1) for directions 0-5
+# Direction 0=top-right 1=right 2=bottom-right 3=bottom-left 4=left 5=top-left
+# baseArms = arms before any rotation. rotation = current scramble (0-5).
+
+ROWS 5
+ROW 0 3
+ROW 1 4
+ROW 2 5
+ROW 3 4
+ROW 4 3
+CENTER 9
+
+NODE  0  0 1 1 1 0 0  ROTATION 5
+NODE  1  0 1 1 1 1 0  ROTATION 0
+NODE  2  0 0 1 1 1 0  ROTATION 0
+NODE  3  1 1 1 1 0 0  ROTATION 5
+NODE  4  1 1 1 1 1 1  ROTATION 2
+NODE  5  1 1 1 1 1 1  ROTATION 1
+NODE  6  0 0 1 1 1 1  ROTATION 1
+NODE  7  1 1 1 0 0 0  ROTATION 1
+NODE  8  1 1 1 1 1 1  ROTATION 5
+NODE  9  1 1 1 1 1 1  ROTATION 0
+NODE 10  1 1 1 1 1 1  ROTATION 5
+NODE 11  0 0 0 1 1 1  ROTATION 5
+NODE 12  1 1 1 0 0 1  ROTATION 4
+NODE 13  1 1 1 1 1 1  ROTATION 0
+NODE 14  1 1 1 1 1 1  ROTATION 4
+NODE 15  1 0 0 1 1 1  ROTATION 3
+NODE 16  1 1 0 0 0 1  ROTATION 0
+NODE 17  1 1 0 0 1 1  ROTATION 0
+NODE 18  1 0 0 0 1 1  ROTATION 0
