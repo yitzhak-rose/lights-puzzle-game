@@ -25,7 +25,6 @@ public:
     // Returns the total number of nodes in the graph.
     int nodeCount() const;
 
-
     // Adds ONE directed edge: nodeId → toNodeId in `direction`.
     void addEdge(int nodeId, int toNodeId, int direction);
 
@@ -34,6 +33,9 @@ public:
 
     // Sets every node's isLit flag to false.
     void resetLighting();
+
+    // Clears all nodes and edges, resetting the graph to an empty state
+    void clear();
 
 private:
     std::vector<Node> m_nodes;

@@ -42,7 +42,6 @@ int Graph::nodeCount() const {
 }
 
 
-// מוסיף קשת בין נורה לשכנה שלה, כולל הכיוון
 // Adds an edge connecting a node to its neighbour, including direction
 void Graph::addEdge(int nodeId, int toNodeId, int direction) {
     if (nodeId < 0 || nodeId >= static_cast<int>(m_adjacency.size())) {
@@ -67,4 +66,10 @@ void Graph::resetLighting() {
     for (Node& node : m_nodes) {
         node.setLit(false);
     }
+}
+
+// Clears all nodes and edges, resetting the graph to an empty state
+void Graph::clear() {
+    m_nodes.clear();
+    m_adjacency.clear();
 }
