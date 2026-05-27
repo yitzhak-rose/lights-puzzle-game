@@ -3,52 +3,61 @@
 #include <string>
 #include <vector>
 #include <utility>
+#include <fstream> 
 
 class Board {
 public:
     // Parses the level file to build the graph and set logical node positions.
     void loadFromFile(const std::string& filename);
 
-    // Rotates a specific node in the given direction.
-    //void rotateNode(int nodeId, RotationDir dir);
+    // Rotates a node and automatically updates lighting.
+    void rotateNode(int nodeId, RotationDir dir);
 
-    // Runs BFS from the center node to update the lighting state of all nodes.
+    // Runs BFS from center to update node power states.
     void updateLighting();
 
-    // Returns true if all nodes in the graph are currently lit.
-    //bool isLevelComplete() const;
+    // Checks if all nodes in the graph are powered.
+    bool isLevelComplete() const;
 
-    // Returns the ID of the clicked node based on coordinates, or -1 if missed.
-    //int getClickedNodeId(float mouseX, float mouseY, float hitRadius) const;
+    // Finds the closest node to mouse click radius.
+    int getClickedNodeId(float mouseX, float mouseY, float hitRadius) const;
 
-    // Returns a read-only reference to the underlying logic graph.
-    //const Graph& getGraph() const;
+    // Returns a read-only reference to the graph.
+    const Graph& getGraph() const;
 
-    // Returns the ID of the power source (center) node.
-    //int getCenterNodeId() const;
+    // Returns the ID of the central power source.
+    int getCenterNodeId() const;
 
-    // Returns the logical X and Y position of a specific node.
-    //std::pair<float, float> getNodePosition(int id) const;
+    // Returns (x, y) coordinates for a specific node.
+    std::pair<float, float> getNodePosition(int id) const;
 
-    // Returns the total number of nodes currently on the board.
-    //int nodeCount() const;
+    // Returns the total number of nodes in the board.
+    int nodeCount() const;
 
 private:
-    // Returns the row sizes read from the file; also sets m_centerNodeId.
+    // Reads rows and center ID from file.
     std::vector<int> readLevelInfo(std::ifstream& file);
 
-    // Fills m_nodePositions from the row sizes.
+    // Fetches an integer value for a given keyword.
+    int getData(std::ifstream& file, const std::string& expectedKeyword);
+
+    // Reads the number of nodes in each row.
+    std::vector<int> getRowSizes(std::ifstream& file, int totalRows);
+
+    // Calculates screen positions for all nodes.
     void computeNodePositions(const std::vector<int>& rowSizes);
 
-    // Reads NODE lines and populates m_graph.
+    // Reads arm configurations for every node from file.
     void parseNodes(std::ifstream& file);
 
-    // Builds edges between neighbours at runtime (bonus).
+    // Connects neighboring nodes based on distance and angle.
     void buildAdjacency();
 
-    static void skipComments(std::ifstream& file);
+    // Skips hashtags, empty lines, and trailing spaces.
+    void skipComments(std::ifstream& file);
 
     Graph m_graph;
-    int   m_centerNodeId = 0;
+    int m_centerNodeId = 0;
+    // List of (x, y) positions for rendering and clicks.
     std::vector<std::pair<float, float>> m_nodePositions;
 };

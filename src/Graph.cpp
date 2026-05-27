@@ -1,7 +1,7 @@
 #include "Graph.h"
 #include <stdexcept>
 #include <string>
-
+#include <algorithm> 
 
 // Adds a node and ensures its ID matches its exact index in the vector
 void Graph::addNode(const Node& node) {
@@ -60,12 +60,9 @@ const std::vector<Graph::Edge>& Graph::getEdges(int nodeId) const {
     return m_adjacency[nodeId];
 }
 
-
 // Iterates through all nodes and turns off their lit state
-void Graph::resetLighting() {
-    for (Node& node : m_nodes) {
-        node.setLit(false);
-    }
+void Graph::resetLighting() { 
+    std::for_each(m_nodes.begin(), m_nodes.end(), [](Node& n) { n.setLit(false); });
 }
 
 // Clears all nodes and edges, resetting the graph to an empty state

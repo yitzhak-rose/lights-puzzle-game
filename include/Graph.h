@@ -22,6 +22,9 @@ public:
     // Returns a read-only reference to the node. 
     const Node& getNode(int id) const;
 
+	// Returns a read-only reference to the vector of all nodes.
+    const std::vector<Node>& getNodes() const { return m_nodes; }
+
     // Returns the total number of nodes in the graph.
     int nodeCount() const;
 
