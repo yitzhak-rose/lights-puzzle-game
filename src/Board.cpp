@@ -1,6 +1,6 @@
 #include "Board.h"
 #include "BFS.h"
-#include "Constants.h"
+#include "constants.h"
 #include <stdexcept>
 #include <fstream>
 #include <cmath>
@@ -15,10 +15,10 @@ void Board::loadFromFile(const std::string& filename) {
         throw std::runtime_error("Board::loadFromFile – cannot open file: " + filename);
 
     // 1. Read metadata (total rows, center ID) and get the size of each row
-    std::vector<int> rowSizes = readLevelInfo(file);
+    m_rowSizes = readLevelInfo(file);
 
     // 2. Calculate the physical (X, Y) screen coordinates for each hexagon
-    computeNodePositions(rowSizes);
+    computeNodePositions(m_rowSizes);
 
     // 3. Read the internal data for each node (arms, initial rotation) and build the graph
     parseNodes(file);
@@ -213,6 +213,7 @@ int Board::getClickedNodeId(float mouseX, float mouseY, float hitRadius) const {
 const Graph& Board::getGraph()        const { return m_graph; }
 int          Board::getCenterNodeId() const { return m_centerNodeId; }
 int          Board::nodeCount()       const { return m_graph.nodeCount(); }
+const std::vector<int>& Board::getRowSizes() const { return m_rowSizes; }
 
 std::pair<float, float> Board::getNodePosition(int id) const {
     if (id < 0 || id >= static_cast<int>(m_nodePositions.size()))

@@ -3,6 +3,10 @@
 #include "../include/view/View.h"
 #include <optional>
 #include "view/Graph.h"
+#include "Board.h"
+#include "constants.h"
+#include <iostream>
+
 
 View::View()
     : uiFont()
@@ -17,15 +21,33 @@ View::View()
 
 View::~View() {}
 
-void View::run(const std::vector<Point>& points, int midRowCount) {
+void View::run(const std::vector<std::string>& levels) {
     const unsigned int windowWidth  = 800;
     const unsigned int windowHeight = 600;
 
-    sf::RenderWindow window(sf::VideoMode({windowWidth, windowHeight}), "Empty Window");
+    sf::RenderWindow window(sf::VideoMode({windowWidth, windowHeight}), "Hexagonal Loop");
 
-    Graph graph(midRowCount);
-    graph.setPoints(points);
-    graph.createPoints(window.getSize());
+    size_t currentLevelIndex = 0;
+    Board board;
+    GraphView graph;
+
+    // Helper to load a level
+    auto loadLevel = [&](size_t index) {
+        if (index >= levels.size()) return false;
+        std::string levelPath = "../resources/" + levels[index];
+        board.loadFromFile(levelPath);
+        graph.createPoints(window.getSize(), board);
+        window.setTitle("Hexagonal Loop - Level " + std::to_string(index + 1) + " of " + std::to_string(levels.size()));
+        return true;
+    };
+
+    // Load initial level
+    if (!loadLevel(currentLevelIndex)) {
+        return;
+    }
+
+    bool levelCompleted = false;
+    sf::Clock completionClock;
 
     while (window.isOpen()) {
         while (const std::optional<sf::Event> event = window.pollEvent()) {
@@ -44,20 +66,47 @@ void View::run(const std::vector<Point>& points, int midRowCount) {
                 if (mouseEvent->button == sf::Mouse::Button::Left) {
                     if (closeBox.getGlobalBounds().contains(mousePos)) {
                         window.close();
-                    } else {
-                        graph.rotatePointAt(mousePos, true);
+                    } else if (!levelCompleted) {
+                        int clickedIndex = graph.getPointIndexAt(mousePos);
+                        if (clickedIndex != -1) {
+                            board.rotateNode(clickedIndex, RotationDir::Clockwise);
+                            graph.updatePointsFromBoard(board);
+                        }
                     }
                 }
 
                 if (mouseEvent->button == sf::Mouse::Button::Right) {
-                    graph.rotatePointAt(mousePos, false);
+                    if (!levelCompleted) {
+                        int clickedIndex = graph.getPointIndexAt(mousePos);
+                        if (clickedIndex != -1) {
+                            board.rotateNode(clickedIndex, RotationDir::CounterClockwise);
+                            graph.updatePointsFromBoard(board);
+                        }
+                    }
                 }
+            }
+        }
+
+        // Check if level is completed and we need to transition
+        if (!levelCompleted && board.isLevelComplete()) {
+            levelCompleted = true;
+            completionClock.restart();
+        }
+
+        if (levelCompleted && completionClock.getElapsedTime().asSeconds() >= 1.5f) {
+            currentLevelIndex++;
+            if (currentLevelIndex < levels.size()) {
+                loadLevel(currentLevelIndex);
+                levelCompleted = false;
+            } else {
+                std::cout << "Congratulations! All levels completed successfully!\n";
+                window.close();
             }
         }
 
         updateCloseButton(window.getSize());
 
-        window.clear();
+        window.clear(sf::Color(18, 18, 24));
         window.draw(graph);
         window.draw(closeBox);
         if (fontLoaded) {

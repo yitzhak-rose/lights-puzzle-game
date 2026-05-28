@@ -34,6 +34,9 @@ public:
     // Returns the total number of nodes in the board.
     int nodeCount() const;
 
+    // Returns the row sizes of the board.
+    const std::vector<int>& getRowSizes() const;
+
 private:
     // Reads rows and center ID from file.
     std::vector<int> readLevelInfo(std::ifstream& file);
@@ -60,4 +63,5 @@ private:
     int m_centerNodeId = 0;
     // List of (x, y) positions for rendering and clicks.
     std::vector<std::pair<float, float>> m_nodePositions;
+    std::vector<int> m_rowSizes;
 };

@@ -21,6 +21,10 @@ void LineShape::setThickness(float thickness) {
     lineRect.setOrigin(sf::Vector2f(0.0f, lineThickness / 2.0f));
 }
 
+void LineShape::setColor(sf::Color color) {
+    lineRect.setFillColor(color);
+}
+
 float LineShape::getLength() const {
     return lineLength;
 }

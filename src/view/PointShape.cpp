@@ -13,6 +13,7 @@ PointShape::~PointShape() {}
 
 void PointShape::buildLines(const Point::LineSlots& slots) {
     lines.clear();
+    sf::Color currentColor = pointData.getLitStatus() ? LIT_COLOR : UNLIT_COLOR;
 
     for (unsigned int index = 0; index < slots.size(); ++index) {
         if (!slots[index]) {
@@ -22,6 +23,7 @@ void PointShape::buildLines(const Point::LineSlots& slots) {
         LineShape line;
         line.setPosition(sf::Vector2f(0.0f, 0.0f));
         line.setRotation(sf::degrees(static_cast<float>(index) * 60.0f));
+        line.setColor(currentColor);
         lines.push_back(line);
     }
 }
@@ -48,5 +50,10 @@ void PointShape::rotateClockwise() {
 
 void PointShape::rotateCounterClockwise() {
     pointData.rotateCounterClockwise();
+    buildLines(pointData.getLineSlots());
+}
+
+void PointShape::updateData(Point point) {
+    pointData = point;
     buildLines(pointData.getLineSlots());
 }

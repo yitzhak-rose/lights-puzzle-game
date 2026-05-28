@@ -29,13 +29,14 @@ public:
     /// @brief Rotates line slots counterclockwise by one step (60 degrees).
     void rotateCounterClockwise();
 
-private:
-    /// @brief Updates the point position.
-    void setPosition(const sf::Vector2f& newPosition);
     /// @brief Updates the line slots.
     void setLineSlots(const LineSlots& newLineSlots);
     /// @brief Marks the point as a centre point.
     void setCentre(bool centre);
+
+private:
+    /// @brief Updates the point position.
+    void setPosition(const sf::Vector2f& newPosition);
 
     sf::Vector2f position;
     LineSlots lineSlots;

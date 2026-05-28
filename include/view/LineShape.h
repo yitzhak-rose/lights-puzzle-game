@@ -19,6 +19,8 @@ public:
     void setLength(float length);
     /// @brief Sets the line thickness.
     void setThickness(float thickness);
+    /// @brief Sets the line color.
+    void setColor(sf::Color color);
 
     /// @brief Returns the line length.
     float getLength() const;

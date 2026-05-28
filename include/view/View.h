@@ -12,8 +12,8 @@ public:
     /// @brief Default destructor.
     ~View();
 
-    /// @brief Runs the view loop for the provided points and layout.
-    void run(const std::vector<Point>& points, int midRowCount);
+    /// @brief Runs the view loop for the list of levels.
+    void run(const std::vector<std::string>& levels);
 
 private:
     /// @brief Updates the close button bounds and text position.

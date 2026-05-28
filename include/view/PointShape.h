@@ -21,6 +21,9 @@ public:
     /// @brief Rotates the point and its lines counterclockwise by 60 degrees.
     void rotateCounterClockwise();
 
+    /// @brief Updates the point shape with new point data.
+    void updateData(Point point);
+
 private:
     /// @brief Draws the point and its lines.
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;

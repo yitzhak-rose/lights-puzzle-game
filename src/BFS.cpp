@@ -1,5 +1,5 @@
 #include "BFS.h"
-#include "Constants.h"
+#include "constants.h"
 #include <queue>
 
 // Runs BFS from the center node and updates the lighting state of all nodes.

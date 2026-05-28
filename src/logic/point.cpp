@@ -31,9 +31,6 @@ const Point::LineSlots& Point::getLineSlots() const {
 }
 
 void Point::setLitStatus(bool lit) {
-    if (isCentre && isLit == true) {
-        throw std::logic_error("Point: centre lit status cannot be changed");
-    }
     isLit = lit;
 }
 
