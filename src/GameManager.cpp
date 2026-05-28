@@ -14,7 +14,7 @@ void GameManager::startGame() {
     std::vector<std::string> levels;
     
     // Read the list of levels from the playlist.
-    std::ifstream playlistFile("../resources/playlist.txt");
+    std::ifstream playlistFile("resources/playlist.txt");
     if (playlistFile.is_open()) {
         std::string line;
         while (std::getline(playlistFile, line)) {
@@ -34,7 +34,7 @@ void GameManager::startGame() {
         }
         playlistFile.close();
     } else {
-        std::cerr << "Warning: Could not open ../resources/playlist.txt, falling back to level1.txt" << std::endl;
+        std::cerr << "Warning: Could not open resources/playlist.txt, falling back to level1.txt" << std::endl;
         levels.push_back("level1.txt");
     }
 

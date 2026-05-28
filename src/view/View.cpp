@@ -13,7 +13,7 @@ View::View()
     , closeText(uiFont)
     , closeBox()
     , fontLoaded(false) {
-    fontLoaded = uiFont.openFromFile("../resources/Roboto-Medium.ttf");
+    fontLoaded = uiFont.openFromFile("resources/Roboto-Medium.ttf");
     closeText.setString("X");
     closeText.setFillColor(sf::Color::White);
     closeText.setStyle(sf::Text::Bold);
@@ -34,7 +34,7 @@ void View::run(const std::vector<std::string>& levels) {
     // Helper to load a level
     auto loadLevel = [&](size_t index) {
         if (index >= levels.size()) return false;
-        std::string levelPath = "../resources/" + levels[index];
+        std::string levelPath = "resources/" + levels[index];
         board.loadFromFile(levelPath);
         graph.createPoints(window.getSize(), board);
         window.setTitle("Hexagonal Loop - Level " + std::to_string(index + 1) + " of " + std::to_string(levels.size()));
