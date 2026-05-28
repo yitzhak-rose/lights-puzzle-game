@@ -19,6 +19,7 @@ void Graph::clear() {
     pointData.clear();
 }
 
+//TODO: temporary func
 std::vector<int> Graph::buildRowCounts() const {
     std::vector<int> counts;
 
@@ -39,6 +40,7 @@ std::vector<int> Graph::buildRowCounts() const {
     return counts;
 }
 
+//TODO: temporary func
 Point::LineSlots Graph::computeLineSlots(int row, int col, const std::vector<int>& rowCounts) const {
     Point::LineSlots slots{false, false, false, false, false, false};
     std::vector<int> availableSlots;

@@ -31,8 +31,10 @@ private:
     /// @brief Draws all point shapes.
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
     /// @brief Builds the row counts for the hex layout.
+    //TODO: temporary func
     std::vector<int> buildRowCounts() const;
     /// @brief Computes line slots based on neighbour positions for the given row/col.
+    //TODO: temporary func
     Point::LineSlots computeLineSlots(int row, int col, const std::vector<int>& rowCounts) const;
 
     int m_midRowCount;
