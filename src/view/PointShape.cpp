@@ -1,30 +1,52 @@
 #include "view/PointShape.h"
 
+#include <SFML/System/Angle.hpp>
+
 PointShape::PointShape(Point point)
     : lines()
     , pointData(point) {
+    setPosition(pointData.getPosition());
+    buildLines(pointData.getLineSlots());
 }
 
 PointShape::~PointShape() {}
 
+void PointShape::buildLines(const Point::LineSlots& slots) {
+    lines.clear();
+
+    for (unsigned int index = 0; index < slots.size(); ++index) {
+        if (!slots[index]) {
+            continue;
+        }
+
+        LineShape line;
+        line.setPosition(sf::Vector2f(0.0f, 0.0f));
+        line.setRotation(sf::degrees(static_cast<float>(index) * 60.0f));
+        lines.push_back(line);
+    }
+}
+
 void PointShape::draw(sf::RenderTarget& target, sf::RenderStates states) const {
-  constexpr float radius = 6.0f;
+    states.transform *= getTransform();
 
-  sf::CircleShape pointCircle(radius);
-  pointCircle.setOrigin(sf::Vector2f(radius, radius));
-  pointCircle.setPosition(pointData.getPosition());
+    sf::CircleShape pointCircle(POINT_RADIUS);
+    pointCircle.setOrigin(sf::Vector2f(POINT_RADIUS, POINT_RADIUS));
+    pointCircle.setPosition(sf::Vector2f(0.0f, 0.0f));
+    pointCircle.setFillColor(pointData.getLitStatus() ? LIT_COLOR : UNLIT_COLOR);
 
-  if (pointData.getLitStatus()) {
-    pointCircle.setFillColor(sf::Color::Yellow);
-  } else {
-    pointCircle.setFillColor(sf::Color::White);
-  }
+    for (const LineShape& line : lines) {
+        target.draw(line, states);
+    }
 
-  target.draw(pointCircle, states);
+    target.draw(pointCircle, states);
+}
 
-  // TODO(LineShape): when LineShape is drawable, draw each line here.
-  // Example:
-  // for (const LineShape& line : lines) {
-  //     target.draw(line, states);
-  // }
+void PointShape::rotateClockwise() {
+    pointData.rotateClockwise();
+    buildLines(pointData.getLineSlots());
+}
+
+void PointShape::rotateCounterClockwise() {
+    pointData.rotateCounterClockwise();
+    buildLines(pointData.getLineSlots());
 }
