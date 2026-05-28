@@ -1,8 +1,13 @@
-//
-// Created by Benji Mandel on 5/20/26.
-//
+#pragma once
 
 
 class GameManager {
-};
+public:
+    /// @brief Creates the game manager.
+    GameManager();
+    /// @brief Default destructor.
+    ~GameManager();
 
+    /// @brief Starts the game loop.
+    void startGame();
+};

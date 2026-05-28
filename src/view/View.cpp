@@ -2,6 +2,7 @@
 
 #include "../include/view/View.h"
 #include <optional>
+#include "view/Graph.h"
 
 View::View()
     : uiFont()
@@ -16,11 +17,15 @@ View::View()
 
 View::~View() {}
 
-void View::run() {
+void View::run(const std::vector<Point>& points, int midRowCount) {
     const unsigned int windowWidth  = 800;
     const unsigned int windowHeight = 600;
 
     sf::RenderWindow window(sf::VideoMode({windowWidth, windowHeight}), "Empty Window");
+
+    Graph graph(midRowCount);
+    graph.setPoints(points);
+    graph.createPoints(window.getSize());
 
     while (window.isOpen()) {
         while (const std::optional<sf::Event> event = window.pollEvent()) {
@@ -29,17 +34,23 @@ void View::run() {
             }
 
             if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()) {
+                updateCloseButton(window.getSize());
+
+                const sf::Vector2f mousePos(
+                    static_cast<float>(mouseEvent->position.x),
+                    static_cast<float>(mouseEvent->position.y)
+                );
+
                 if (mouseEvent->button == sf::Mouse::Button::Left) {
-                    updateCloseButton(window.getSize());
-
-                    const sf::Vector2f mousePos(
-                        static_cast<float>(mouseEvent->position.x),
-                        static_cast<float>(mouseEvent->position.y)
-                    );
-
                     if (closeBox.getGlobalBounds().contains(mousePos)) {
                         window.close();
+                    } else {
+                        graph.rotatePointAt(mousePos, true);
                     }
+                }
+
+                if (mouseEvent->button == sf::Mouse::Button::Right) {
+                    graph.rotatePointAt(mousePos, false);
                 }
             }
         }
@@ -47,6 +58,7 @@ void View::run() {
         updateCloseButton(window.getSize());
 
         window.clear();
+        window.draw(graph);
         window.draw(closeBox);
         if (fontLoaded) {
             window.draw(closeText);
