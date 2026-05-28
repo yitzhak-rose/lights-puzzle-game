@@ -47,7 +47,6 @@ void View::run(const std::vector<std::string>& levels) {
     }
 
     bool levelCompleted = false;
-    sf::Clock completionClock;
 
     while (window.isOpen()) {
         while (const std::optional<sf::Event> event = window.pollEvent()) {
@@ -72,6 +71,16 @@ void View::run(const std::vector<std::string>& levels) {
                             board.rotateNode(clickedIndex, RotationDir::Clockwise);
                             graph.updatePointsFromBoard(board);
                         }
+                    } else {
+                        // Dialogue is shown, click to proceed
+                        currentLevelIndex++;
+                        if (currentLevelIndex < levels.size()) {
+                            loadLevel(currentLevelIndex);
+                            levelCompleted = false;
+                        } else {
+                            std::cout << "Congratulations! All levels completed successfully!\n";
+                            window.close();
+                        }
                     }
                 }
 
@@ -82,26 +91,39 @@ void View::run(const std::vector<std::string>& levels) {
                             board.rotateNode(clickedIndex, RotationDir::CounterClockwise);
                             graph.updatePointsFromBoard(board);
                         }
+                    } else {
+                        // Dialogue is shown, click to proceed
+                        currentLevelIndex++;
+                        if (currentLevelIndex < levels.size()) {
+                            loadLevel(currentLevelIndex);
+                            levelCompleted = false;
+                        } else {
+                            std::cout << "Congratulations! All levels completed successfully!\n";
+                            window.close();
+                        }
+                    }
+                }
+            }
+
+            if (const auto* keyEvent = event->getIf<sf::Event::KeyPressed>()) {
+                if (levelCompleted) {
+                    if (keyEvent->code == sf::Keyboard::Key::Space || keyEvent->code == sf::Keyboard::Key::Enter) {
+                        currentLevelIndex++;
+                        if (currentLevelIndex < levels.size()) {
+                            loadLevel(currentLevelIndex);
+                            levelCompleted = false;
+                        } else {
+                            std::cout << "Congratulations! All levels completed successfully!\n";
+                            window.close();
+                        }
                     }
                 }
             }
         }
 
-        // Check if level is completed and we need to transition
+        // Check if level is completed
         if (!levelCompleted && board.isLevelComplete()) {
             levelCompleted = true;
-            completionClock.restart();
-        }
-
-        if (levelCompleted && completionClock.getElapsedTime().asSeconds() >= 1.5f) {
-            currentLevelIndex++;
-            if (currentLevelIndex < levels.size()) {
-                loadLevel(currentLevelIndex);
-                levelCompleted = false;
-            } else {
-                std::cout << "Congratulations! All levels completed successfully!\n";
-                window.close();
-            }
         }
 
         updateCloseButton(window.getSize());
@@ -112,6 +134,57 @@ void View::run(const std::vector<std::string>& levels) {
         if (fontLoaded) {
             window.draw(closeText);
         }
+
+        // Draw dialogue overlay and panel if level is finished
+        if (levelCompleted) {
+            sf::RectangleShape overlay(sf::Vector2f(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y)));
+            overlay.setFillColor(sf::Color(0, 0, 0, 180));
+            window.draw(overlay);
+
+            float panelWidth = 400.0f;
+            float panelHeight = 200.0f;
+            sf::RectangleShape panel(sf::Vector2f(panelWidth, panelHeight));
+            panel.setFillColor(sf::Color(28, 28, 36));
+            panel.setOutlineThickness(3.0f);
+            panel.setOutlineColor(sf::Color(255, 215, 0)); // Gold accent
+            panel.setOrigin(sf::Vector2f(panelWidth / 2.0f, panelHeight / 2.0f));
+            panel.setPosition(sf::Vector2f(static_cast<float>(window.getSize().x) / 2.0f, static_cast<float>(window.getSize().y) / 2.0f));
+            window.draw(panel);
+
+            if (fontLoaded) {
+                sf::Text titleText(uiFont);
+                titleText.setString("LEVEL FINISHED!");
+                titleText.setCharacterSize(28);
+                titleText.setFillColor(sf::Color::White);
+                titleText.setStyle(sf::Text::Bold);
+                const sf::FloatRect titleBounds = titleText.getLocalBounds();
+                titleText.setOrigin(sf::Vector2f(
+                    titleBounds.position.x + titleBounds.size.x / 2.0f,
+                    titleBounds.position.y + titleBounds.size.y / 2.0f
+                ));
+                titleText.setPosition(sf::Vector2f(
+                    static_cast<float>(window.getSize().x) / 2.0f,
+                    static_cast<float>(window.getSize().y) / 2.0f - 30.0f
+                ));
+                window.draw(titleText);
+
+                sf::Text subText(uiFont);
+                subText.setString("Press Space or Click to continue");
+                subText.setCharacterSize(16);
+                subText.setFillColor(sf::Color(180, 180, 200));
+                const sf::FloatRect subBounds = subText.getLocalBounds();
+                subText.setOrigin(sf::Vector2f(
+                    subBounds.position.x + subBounds.size.x / 2.0f,
+                    subBounds.position.y + subBounds.size.y / 2.0f
+                ));
+                subText.setPosition(sf::Vector2f(
+                    static_cast<float>(window.getSize().x) / 2.0f,
+                    static_cast<float>(window.getSize().y) / 2.0f + 30.0f
+                ));
+                window.draw(subText);
+            }
+        }
+
         window.display();
     }
 }

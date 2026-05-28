@@ -35,4 +35,5 @@ private:
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
     std::vector<PointShape> points;
+    float m_scale;
 };
