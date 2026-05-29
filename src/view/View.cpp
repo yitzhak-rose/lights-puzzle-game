@@ -1,187 +1,187 @@
-// #include ".../include/view/View.h"
-
 #include "../include/view/View.h"
-#include <optional>
-#include "view/Graph.h"
-#include "Board.h"
+#include "view/BoardRenderer.h"
+#include "logic/Board.h"
 #include "constants.h"
+#include <fstream>
 #include <iostream>
+#include <optional>
 
+// ──────────────────────────────────────────────────────────────
+//  Constructor
+// ──────────────────────────────────────────────────────────────
 
 View::View()
-    : uiFont()
-    , closeText(uiFont)
-    , closeBox()
-    , fontLoaded(false) {
-    fontLoaded = uiFont.openFromFile("resources/Roboto-Medium.ttf");
-    closeText.setString("X");
-    closeText.setFillColor(sf::Color::White);
-    closeText.setStyle(sf::Text::Bold);
+    : m_font()
+    , m_closeText(m_font)
+    , m_closeBox() {
+    m_fontLoaded = m_font.openFromFile("resources/Roboto-Medium.ttf");
+    m_closeText.setString("X");
+    m_closeText.setFillColor(sf::Color::White);
+    m_closeText.setStyle(sf::Text::Bold);
 }
 
-View::~View() {}
+// ──────────────────────────────────────────────────────────────
+//  Playlist
+// ──────────────────────────────────────────────────────────────
 
-void View::run(const std::vector<std::string>& levels) {
-    const unsigned int windowWidth  = 800;
-    const unsigned int windowHeight = 600;
+std::vector<std::string> View::loadPlaylist() const {
+    std::vector<std::string> levels;
+    std::ifstream file("resources/playlist.txt");
 
-    sf::RenderWindow window(sf::VideoMode({windowWidth, windowHeight}), "Hexagonal Loop");
+    if (!file.is_open()) {
+        std::cerr << "Warning: cannot open playlist.txt, falling back to level1.txt\n";
+        return {"level1.txt"};
+    }
 
-    size_t currentLevelIndex = 0;
-    Board board;
-    GraphView graph;
+    std::string line;
+    while (std::getline(file, line)) {
+        // Trim trailing whitespace / CR
+        while (!line.empty() && (line.back() == '\r' || line.back() == '\n' || line.back() == ' '))
+            line.pop_back();
+        // Trim leading whitespace
+        const size_t start = line.find_first_not_of(" \t");
+        if (start != std::string::npos)
+            line = line.substr(start);
 
-    // Helper to load a level
-    auto loadLevel = [&](size_t index) {
+        if (!line.empty() && line[0] != '#')
+            levels.push_back(line);
+    }
+
+    if (levels.empty()) {
+        std::cerr << "Warning: playlist.txt is empty, falling back to level1.txt\n";
+        return {"level1.txt"};
+    }
+    return levels;
+}
+
+// ──────────────────────────────────────────────────────────────
+//  Main loop
+// ──────────────────────────────────────────────────────────────
+
+void View::run() {
+    const std::vector<std::string> levels = loadPlaylist();
+
+    sf::RenderWindow window(sf::VideoMode({800u, 600u}), "Hexagonal Loop");
+
+    size_t        currentLevel   = 0;
+    Board         board;
+    BoardRenderer renderer;
+    bool          levelCompleted = false;
+
+    // Load level by index; returns false when out of bounds.
+    auto loadLevel = [&](size_t index) -> bool {
         if (index >= levels.size()) return false;
-        std::string levelPath = "resources/" + levels[index];
-        board.loadFromFile(levelPath);
-        graph.createPoints(window.getSize(), board);
-        window.setTitle("Hexagonal Loop - Level " + std::to_string(index + 1) + " of " + std::to_string(levels.size()));
+        board.loadFromFile("resources/" + levels[index]);
+        renderer.init(window.getSize(), board);
+        window.setTitle("Hexagonal Loop - Level " + std::to_string(index + 1)
+                        + " of " + std::to_string(levels.size()));
         return true;
     };
 
-    // Load initial level
-    if (!loadLevel(currentLevelIndex)) {
-        return;
-    }
+    // Advance to the next level (shared by all inputs).
+    auto advanceLevel = [&]() {
+        if (++currentLevel < levels.size()) {
+            loadLevel(currentLevel);
+            levelCompleted = false;
+        } else {
+            std::cout << "Congratulations! All levels completed!\n";
+            window.close();
+        }
+    };
 
-    bool levelCompleted = false;
+    if (!loadLevel(currentLevel)) return;
 
+    // ── Event loop ───────────────────────────────
     while (window.isOpen()) {
         while (const std::optional<sf::Event> event = window.pollEvent()) {
+
             if (event->is<sf::Event::Closed>()) {
                 window.close();
             }
 
-            if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()) {
+            if (const auto* mouse = event->getIf<sf::Event::MouseButtonPressed>()) {
                 updateCloseButton(window.getSize());
+                const sf::Vector2f pos(static_cast<float>(mouse->position.x),
+                                       static_cast<float>(mouse->position.y));
 
-                const sf::Vector2f mousePos(
-                    static_cast<float>(mouseEvent->position.x),
-                    static_cast<float>(mouseEvent->position.y)
-                );
-
-                if (mouseEvent->button == sf::Mouse::Button::Left) {
-                    if (closeBox.getGlobalBounds().contains(mousePos)) {
-                        window.close();
-                    } else if (!levelCompleted) {
-                        int clickedIndex = graph.getPointIndexAt(mousePos);
-                        if (clickedIndex != -1) {
-                            board.rotateNode(clickedIndex, RotationDir::Clockwise);
-                            graph.updatePointsFromBoard(board);
-                        }
-                    } else {
-                        // Dialogue is shown, click to proceed
-                        currentLevelIndex++;
-                        if (currentLevelIndex < levels.size()) {
-                            loadLevel(currentLevelIndex);
-                            levelCompleted = false;
-                        } else {
-                            std::cout << "Congratulations! All levels completed successfully!\n";
-                            window.close();
-                        }
-                    }
-                }
-
-                if (mouseEvent->button == sf::Mouse::Button::Right) {
-                    if (!levelCompleted) {
-                        int clickedIndex = graph.getPointIndexAt(mousePos);
-                        if (clickedIndex != -1) {
-                            board.rotateNode(clickedIndex, RotationDir::CounterClockwise);
-                            graph.updatePointsFromBoard(board);
-                        }
-                    } else {
-                        // Dialogue is shown, click to proceed
-                        currentLevelIndex++;
-                        if (currentLevelIndex < levels.size()) {
-                            loadLevel(currentLevelIndex);
-                            levelCompleted = false;
-                        } else {
-                            std::cout << "Congratulations! All levels completed successfully!\n";
-                            window.close();
-                        }
+                if (m_closeBox.getGlobalBounds().contains(pos)) {
+                    window.close();
+                } else if (levelCompleted) {
+                    advanceLevel();
+                } else {
+                    const RotationDir dir = (mouse->button == sf::Mouse::Button::Left)
+                                           ? RotationDir::Clockwise
+                                           : RotationDir::CounterClockwise;
+                    const int idx = renderer.getNodeAt(pos);
+                    if (idx != -1) {
+                        board.rotateNode(idx, dir);
+                        renderer.sync(board);
                     }
                 }
             }
 
-            if (const auto* keyEvent = event->getIf<sf::Event::KeyPressed>()) {
-                if (levelCompleted) {
-                    if (keyEvent->code == sf::Keyboard::Key::Space || keyEvent->code == sf::Keyboard::Key::Enter) {
-                        currentLevelIndex++;
-                        if (currentLevelIndex < levels.size()) {
-                            loadLevel(currentLevelIndex);
-                            levelCompleted = false;
-                        } else {
-                            std::cout << "Congratulations! All levels completed successfully!\n";
-                            window.close();
-                        }
-                    }
+            if (const auto* key = event->getIf<sf::Event::KeyPressed>()) {
+                if (levelCompleted &&
+                    (key->code == sf::Keyboard::Key::Space ||
+                     key->code == sf::Keyboard::Key::Enter)) {
+                    advanceLevel();
                 }
             }
         }
 
-        // Check if level is completed
-        if (!levelCompleted && board.isLevelComplete()) {
+        if (!levelCompleted && board.isLevelComplete())
             levelCompleted = true;
-        }
 
+        // ── Render ──────────────────────────────
         updateCloseButton(window.getSize());
-
         window.clear(sf::Color(18, 18, 24));
-        window.draw(graph);
-        window.draw(closeBox);
-        if (fontLoaded) {
-            window.draw(closeText);
-        }
+        window.draw(renderer);
+        window.draw(m_closeBox);
+        if (m_fontLoaded) window.draw(m_closeText);
 
-        // Draw dialogue overlay and panel if level is finished
         if (levelCompleted) {
-            sf::RectangleShape overlay(sf::Vector2f(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y)));
+            // Dim overlay
+            sf::RectangleShape overlay(sf::Vector2f(
+                static_cast<float>(window.getSize().x),
+                static_cast<float>(window.getSize().y)));
             overlay.setFillColor(sf::Color(0, 0, 0, 180));
             window.draw(overlay);
 
-            float panelWidth = 400.0f;
-            float panelHeight = 200.0f;
-            sf::RectangleShape panel(sf::Vector2f(panelWidth, panelHeight));
+            // Panel
+            constexpr float PW = 400.0f, PH = 200.0f;
+            sf::RectangleShape panel(sf::Vector2f(PW, PH));
             panel.setFillColor(sf::Color(28, 28, 36));
             panel.setOutlineThickness(3.0f);
-            panel.setOutlineColor(sf::Color(255, 215, 0)); // Gold accent
-            panel.setOrigin(sf::Vector2f(panelWidth / 2.0f, panelHeight / 2.0f));
-            panel.setPosition(sf::Vector2f(static_cast<float>(window.getSize().x) / 2.0f, static_cast<float>(window.getSize().y) / 2.0f));
+            panel.setOutlineColor(sf::Color(255, 215, 0));
+            panel.setOrigin(sf::Vector2f(PW / 2.0f, PH / 2.0f));
+            panel.setPosition(sf::Vector2f(
+                static_cast<float>(window.getSize().x) / 2.0f,
+                static_cast<float>(window.getSize().y) / 2.0f));
             window.draw(panel);
 
-            if (fontLoaded) {
-                sf::Text titleText(uiFont);
-                titleText.setString("LEVEL FINISHED!");
-                titleText.setCharacterSize(28);
-                titleText.setFillColor(sf::Color::White);
-                titleText.setStyle(sf::Text::Bold);
-                const sf::FloatRect titleBounds = titleText.getLocalBounds();
-                titleText.setOrigin(sf::Vector2f(
-                    titleBounds.position.x + titleBounds.size.x / 2.0f,
-                    titleBounds.position.y + titleBounds.size.y / 2.0f
-                ));
-                titleText.setPosition(sf::Vector2f(
+            if (m_fontLoaded) {
+                const sf::Vector2f wc(
                     static_cast<float>(window.getSize().x) / 2.0f,
-                    static_cast<float>(window.getSize().y) / 2.0f - 30.0f
-                ));
-                window.draw(titleText);
+                    static_cast<float>(window.getSize().y) / 2.0f);
 
-                sf::Text subText(uiFont);
-                subText.setString("Press Space or Click to continue");
-                subText.setCharacterSize(16);
-                subText.setFillColor(sf::Color(180, 180, 200));
-                const sf::FloatRect subBounds = subText.getLocalBounds();
-                subText.setOrigin(sf::Vector2f(
-                    subBounds.position.x + subBounds.size.x / 2.0f,
-                    subBounds.position.y + subBounds.size.y / 2.0f
-                ));
-                subText.setPosition(sf::Vector2f(
-                    static_cast<float>(window.getSize().x) / 2.0f,
-                    static_cast<float>(window.getSize().y) / 2.0f + 30.0f
-                ));
-                window.draw(subText);
+                auto centredText = [&](const std::string& str,
+                                       unsigned int size,
+                                       sf::Color color,
+                                       float yOffset) {
+                    sf::Text t(m_font);
+                    t.setString(str);
+                    t.setCharacterSize(size);
+                    t.setFillColor(color);
+                    const sf::FloatRect b = t.getLocalBounds();
+                    t.setOrigin(sf::Vector2f(b.position.x + b.size.x / 2.0f,
+                                             b.position.y + b.size.y / 2.0f));
+                    t.setPosition(wc + sf::Vector2f(0.0f, yOffset));
+                    window.draw(t);
+                };
+
+                centredText("LEVEL FINISHED!", 28, sf::Color::White, -30.0f);
+                centredText("Press Space or Click to continue", 16,
+                            sf::Color(180, 180, 200), 30.0f);
             }
         }
 
@@ -189,27 +189,24 @@ void View::run(const std::vector<std::string>& levels) {
     }
 }
 
+// ──────────────────────────────────────────────────────────────
+//  Private helpers
+// ──────────────────────────────────────────────────────────────
+
 void View::updateCloseButton(sf::Vector2u windowSize) {
-    const float buttonSize   = 24.0f;
-    const float buttonMargin = 8.0f;
+    constexpr float size   = 24.0f;
+    constexpr float margin = 8.0f;
+    const sf::Vector2f pos(
+        static_cast<float>(windowSize.x) - margin - size, margin);
 
-    sf::Vector2f buttonPos(
-        static_cast<float>(windowSize.x) - buttonMargin - buttonSize,
-        buttonMargin
-    );
+    m_closeBox.setSize(sf::Vector2f(size, size));
+    m_closeBox.setPosition(pos);
+    m_closeBox.setFillColor(sf::Color::Red);
 
-    closeBox.setSize(sf::Vector2f(buttonSize, buttonSize));
-    closeBox.setPosition(buttonPos);
-    closeBox.setFillColor(sf::Color::Red);
-
-    closeText.setCharacterSize(18); // tweak as needed
-    const sf::FloatRect textBounds = closeText.getLocalBounds();
-    closeText.setOrigin(sf::Vector2f(
-        textBounds.position.x + textBounds.size.x / 2.0f,
-        textBounds.position.y + textBounds.size.y / 2.0f
-    ));
-    closeText.setPosition(sf::Vector2f(
-        buttonPos.x + buttonSize / 2.0f,
-        buttonPos.y + buttonSize / 2.0f
-    ));
+    m_closeText.setCharacterSize(18);
+    const sf::FloatRect tb = m_closeText.getLocalBounds();
+    m_closeText.setOrigin(sf::Vector2f(
+        tb.position.x + tb.size.x / 2.0f,
+        tb.position.y + tb.size.y / 2.0f));
+    m_closeText.setPosition(sf::Vector2f(pos.x + size / 2.0f, pos.y + size / 2.0f));
 }

@@ -1,4 +1,4 @@
-#include "BFS.h"
+#include "logic/BFS.h"
 #include "constants.h"
 #include <queue>
 

@@ -1,39 +1,34 @@
 #include "view/LineShape.h"
 
 LineShape::LineShape(float length, float thickness)
-    : lineRect()
-    , lineLength(length)
-    , lineThickness(thickness) {
+    : m_rect()
+    , m_length(length)
+    , m_thickness(thickness) {
     setLength(length);
     setThickness(thickness);
-    lineRect.setFillColor(UNLIT_COLOR);
+    m_rect.setFillColor(UNLIT_COLOR);
 }
 
 void LineShape::setLength(float length) {
-    lineLength = length;
-    lineRect.setSize(sf::Vector2f(lineLength, lineThickness));
-    lineRect.setOrigin(sf::Vector2f(0.0f, lineThickness / 2.0f));
+    m_length = length;
+    m_rect.setSize(sf::Vector2f(m_length, m_thickness));
+    m_rect.setOrigin(sf::Vector2f(0.0f, m_thickness / 2.0f));
 }
 
 void LineShape::setThickness(float thickness) {
-    lineThickness = thickness;
-    lineRect.setSize(sf::Vector2f(lineLength, lineThickness));
-    lineRect.setOrigin(sf::Vector2f(0.0f, lineThickness / 2.0f));
+    m_thickness = thickness;
+    m_rect.setSize(sf::Vector2f(m_length, m_thickness));
+    m_rect.setOrigin(sf::Vector2f(0.0f, m_thickness / 2.0f));
 }
 
 void LineShape::setColor(sf::Color color) {
-    lineRect.setFillColor(color);
+    m_rect.setFillColor(color);
 }
 
-float LineShape::getLength() const {
-    return lineLength;
-}
-
-float LineShape::getThickness() const {
-    return lineThickness;
-}
+float LineShape::getLength()    const { return m_length; }
+float LineShape::getThickness() const { return m_thickness; }
 
 void LineShape::draw(sf::RenderTarget& target, sf::RenderStates states) const {
     states.transform *= getTransform();
-    target.draw(lineRect, states);
+    target.draw(m_rect, states);
 }

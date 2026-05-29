@@ -1,26 +1,27 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <string>
 #include <vector>
 
-#include "../include/logic/Point.h"
-
+// Entry point of the entire application.
+// Reads the playlist, owns the window, and runs the game loop.
 class View {
 public:
-    /// @brief Creates the view and loads UI assets.
     View();
-    /// @brief Default destructor.
-    ~View();
+    ~View() = default;
 
-    /// @brief Runs the view loop for the list of levels.
-    void run(const std::vector<std::string>& levels);
+    // Reads resources/playlist.txt and starts the game loop.
+    void run();
 
 private:
-    /// @brief Updates the close button bounds and text position.
+    // ── helpers ──────────────────────────────────
+    std::vector<std::string> loadPlaylist() const;
     void updateCloseButton(sf::Vector2u windowSize);
 
-    sf::Font uiFont;
-    sf::Text closeText;
-    sf::RectangleShape closeBox;
-    bool fontLoaded;
+    // ── UI assets ────────────────────────────────
+    sf::Font           m_font;
+    sf::Text           m_closeText;
+    sf::RectangleShape m_closeBox;
+    bool               m_fontLoaded = false;
 };

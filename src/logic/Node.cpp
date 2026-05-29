@@ -1,4 +1,4 @@
-#include "Node.h"
+#include "logic/Node.h"
 
 // Constructor: Initializes the node with its ID and base arms. Rotation starts at 0.
 Node::Node(int id, const std::vector<bool>& baseArms)

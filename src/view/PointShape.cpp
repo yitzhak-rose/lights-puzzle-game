@@ -1,59 +1,52 @@
 #include "view/PointShape.h"
-
+#include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/System/Angle.hpp>
 
-PointShape::PointShape(Point point)
-    : lines()
-    , pointData(point) {
-    setPosition(pointData.getPosition());
-    buildLines(pointData.getLineSlots());
+PointShape::PointShape(const sf::Vector2f& position,
+                       const LineSlots&   slots,
+                       bool isLit,
+                       bool isCentre)
+    : m_slots(slots)
+    , m_isLit(isLit)
+    , m_isCentre(isCentre) {
+    setPosition(position);
+    buildLines();
 }
 
-PointShape::~PointShape() {}
+void PointShape::update(const LineSlots& slots, bool isLit) {
+    m_slots = slots;
+    m_isLit = isLit;
+    buildLines();
+}
 
-void PointShape::buildLines(const Point::LineSlots& slots) {
-    lines.clear();
-    sf::Color currentColor = pointData.getLitStatus() ? LIT_COLOR : UNLIT_COLOR;
+sf::Vector2f PointShape::getPosition() const {
+    return sf::Transformable::getPosition();
+}
 
-    for (unsigned int index = 0; index < slots.size(); ++index) {
-        if (!slots[index]) {
-            continue;
-        }
+void PointShape::buildLines() {
+    m_lines.clear();
+    const sf::Color color = m_isLit ? LIT_COLOR : UNLIT_COLOR;
 
+    for (unsigned int i = 0; i < m_slots.size(); ++i) {
+        if (!m_slots[i]) continue;
         LineShape line;
         line.setPosition(sf::Vector2f(0.0f, 0.0f));
-        line.setRotation(sf::degrees(static_cast<float>(index) * 60.0f));
-        line.setColor(currentColor);
-        lines.push_back(line);
+        line.setRotation(sf::degrees(static_cast<float>(i) * 60.0f));
+        line.setColor(color);
+        m_lines.push_back(line);
     }
 }
 
 void PointShape::draw(sf::RenderTarget& target, sf::RenderStates states) const {
     states.transform *= getTransform();
 
-    sf::CircleShape pointCircle(POINT_RADIUS);
-    pointCircle.setOrigin(sf::Vector2f(POINT_RADIUS, POINT_RADIUS));
-    pointCircle.setPosition(sf::Vector2f(0.0f, 0.0f));
-    pointCircle.setFillColor(pointData.getLitStatus() ? LIT_COLOR : UNLIT_COLOR);
-
-    for (const LineShape& line : lines) {
+    for (const LineShape& line : m_lines)
         target.draw(line, states);
-    }
 
-    target.draw(pointCircle, states);
-}
-
-void PointShape::rotateClockwise() {
-    pointData.rotateClockwise();
-    buildLines(pointData.getLineSlots());
-}
-
-void PointShape::rotateCounterClockwise() {
-    pointData.rotateCounterClockwise();
-    buildLines(pointData.getLineSlots());
-}
-
-void PointShape::updateData(Point point) {
-    pointData = point;
-    buildLines(pointData.getLineSlots());
+    sf::CircleShape circle(POINT_RADIUS);
+    circle.setOrigin(sf::Vector2f(POINT_RADIUS, POINT_RADIUS));
+    circle.setPosition(sf::Vector2f(0.0f, 0.0f));
+    circle.setFillColor(m_isCentre ? sf::Color(255, 215, 0)
+                                   : (m_isLit ? LIT_COLOR : UNLIT_COLOR));
+    target.draw(circle, states);
 }

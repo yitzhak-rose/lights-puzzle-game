@@ -1,5 +1,5 @@
 #pragma once
-#include "Node.h"
+#include "logic/Node.h"
 #include <vector>
 
 // Holds all Nodes and their adjacency information.

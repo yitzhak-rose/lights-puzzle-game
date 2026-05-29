@@ -1,4 +1,4 @@
-#include "Graph.h"
+#include "logic/Graph.h"
 #include <stdexcept>
 #include <string>
 #include <algorithm> 

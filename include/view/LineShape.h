@@ -2,36 +2,31 @@
 
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
+#include <SFML/Graphics/Drawable.hpp>
+#include <SFML/Graphics/Transformable.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
 
 #include "../include/constants.h"
-#include "../include/view/Shape.h"
 
-class LineShape : public Shape {
+// A single arm line drawn from the center of a hex node outward.
+// Inherits directly from SFML Drawable + Transformable (no intermediate Shape base).
+class LineShape : public sf::Drawable, public sf::Transformable {
 public:
-    /// @brief Creates a line segment with the given length and thickness.
     explicit LineShape(float length = LINE_LENGTH, float thickness = 4.0f);
-    /// @brief Default destructor.
     ~LineShape() override = default;
 
-    /// @brief Sets the line length.
     void setLength(float length);
-    /// @brief Sets the line thickness.
     void setThickness(float thickness);
-    /// @brief Sets the line color.
     void setColor(sf::Color color);
 
-    /// @brief Returns the line length.
-    float getLength() const;
-    /// @brief Returns the line thickness.
+    float getLength()    const;
     float getThickness() const;
 
 private:
-    /// @brief Draws the line.
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
-    sf::RectangleShape lineRect;
-    float lineLength;
-    float lineThickness;
+    sf::RectangleShape m_rect;
+    float m_length;
+    float m_thickness;
 };

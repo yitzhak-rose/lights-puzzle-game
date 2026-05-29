@@ -1,5 +1,5 @@
 #pragma once
-#include "Graph.h"
+#include "logic/Graph.h"
 
 // Responsible for propagating power through the board using BFS.
 // Starting from the center node, it lights up every node that is

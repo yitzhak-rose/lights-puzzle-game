@@ -1,5 +1,5 @@
-#include "Board.h"
-#include "BFS.h"
+#include "logic/Board.h"
+#include "logic/BFS.h"
 #include "constants.h"
 #include <stdexcept>
 #include <fstream>
@@ -193,21 +193,6 @@ bool Board::isLevelComplete() const {
     return std::all_of(nodes.begin(), nodes.end(), [](const Node& n) { return n.isLit(); });
 }
 
-// Returns the ID of the node clicked, or -1 if none.
-int Board::getClickedNodeId(float mouseX, float mouseY, float hitRadius) const {
-    auto it = std::min_element(m_nodePositions.begin(), m_nodePositions.end(),
-        [&](const auto& a, const auto& b) {
-            return std::hypot(mouseX - a.first, mouseY - a.second)
-                < std::hypot(mouseX - b.first, mouseY - b.second);
-        });
-
-    if (it == m_nodePositions.end()) return -1;
-
-    float dist = std::hypot(mouseX - it->first, mouseY - it->second);
-    if (dist >= hitRadius) return -1;
-
-    return static_cast<int>(std::distance(m_nodePositions.begin(), it));
-}
 
 // Getters
 const Graph& Board::getGraph()        const { return m_graph; }

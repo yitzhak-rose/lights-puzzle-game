@@ -1,5 +1,5 @@
 #pragma once
-#include "Graph.h"
+#include "logic/Graph.h"
 #include <string>
 #include <vector>
 #include <utility>
@@ -18,9 +18,6 @@ public:
 
     // Checks if all nodes in the graph are powered.
     bool isLevelComplete() const;
-
-    // Finds the closest node to mouse click radius.
-    int getClickedNodeId(float mouseX, float mouseY, float hitRadius) const;
 
     // Returns a read-only reference to the graph.
     const Graph& getGraph() const;
