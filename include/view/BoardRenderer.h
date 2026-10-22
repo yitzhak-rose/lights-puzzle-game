@@ -27,6 +27,15 @@ public:
     void sync(const Board& board);
 
 private:
+    // Finds the logical bounding box
+    sf::FloatRect calculateBoardBounds(const Board& board) const;
+
+    // Calculates scale factor - using sf::Vector2f for target dimensions
+    float calculateTargetScale(sf::Vector2f windowSize, float boardW, float boardH) const;
+
+    // Populates m_points
+    void createPointShapes(sf::Vector2f windowSize, const Board& board, const sf::FloatRect& bounds);
+
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
     std::vector<PointShape> m_points;

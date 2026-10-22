@@ -15,47 +15,62 @@ BoardRenderer::BoardRenderer() = default;
 
 void BoardRenderer::init(sf::Vector2u windowSize, const Board& board) {
     m_points.clear();
+    if (board.nodeCount() == 0) return;
 
-    const std::vector<int>& rowCounts = board.getRowSizes();
-    if (rowCounts.empty()) return;
+    // Explicitly convert window size to float vector for calculations
+    sf::Vector2f fWindowSize(windowSize);
 
-    const int   totalRows = static_cast<int>(rowCounts.size());
-    const float dx        = LINE_LENGTH * 2.0f;
-    const float dy        = dx * 0.8660254f; // sqrt(3)/2 for hex grid
+    //  Find the logical boundaries
+    sf::FloatRect bounds = calculateBoardBounds(board);
 
-    int maxCols = 0;
-    for (int c : rowCounts) maxCols = std::max(maxCols, c);
+    //  Determine scale
+    m_scale = calculateTargetScale(fWindowSize, bounds.size.x, bounds.size.y);
 
-    const float gridW = static_cast<float>(maxCols - 1) * dx;
-    const float gridH = static_cast<float>(totalRows - 1) * dy;
+    //  Create and position shapes
+    createPointShapes(fWindowSize, board, bounds);
+}
 
-    const float targetW = static_cast<float>(windowSize.x) - 120.0f;
-    const float targetH = static_cast<float>(windowSize.y) - 160.0f;
+sf::FloatRect BoardRenderer::calculateBoardBounds(const Board& board) const {
+    float minX = 1e9f, maxX = -1e9f, minY = 1e9f, maxY = -1e9f;
 
-    m_scale = std::min(
-        gridW > 0.0f ? targetW / gridW : 1.0f,
-        gridH > 0.0f ? targetH / gridH : 1.0f);
-    if (m_scale > 1.0f) m_scale = 1.0f;
+    for (int i = 0; i < board.nodeCount(); ++i) {
+        auto [lx, ly] = board.getNodePosition(i);
+        if (lx < minX) minX = lx; if (lx > maxX) maxX = lx;
+        if (ly < minY) minY = ly; if (ly > maxY) maxY = ly;
+    }
 
-    const float cx = static_cast<float>(windowSize.x) / 2.0f;
-    const float cy = static_cast<float>(windowSize.y) / 2.0f;
+    //  Rect constructor: {position, size}
+    return sf::FloatRect({ minX, minY }, { maxX - minX, maxY - minY });
+}
 
-    int idx = 0;
-    for (int row = 0; row < totalRows; ++row) {
-        const int   count  = rowCounts[row];
-        const float rowW   = static_cast<float>(count - 1) * dx;
-        for (int col = 0; col < count; ++col) {
-            const float x = cx + (-rowW / 2.0f + col * dx) * m_scale;
-            const float y = cy + (-gridH / 2.0f + row * dy) * m_scale;
+float BoardRenderer::calculateTargetScale(sf::Vector2f windowSize, float boardW, float boardH) const {
+    if (boardW <= 0 || boardH <= 0) return 1.0f;
 
-            const Node& node     = board.getGraph().getNode(idx);
-            const bool  isCentre = (idx == board.getCenterNodeId());
+    const float margin = 120.0f;
+    float targetW = windowSize.x - margin;
+    float targetH = windowSize.y - margin;
 
-            PointShape ps(sf::Vector2f(x, y), slotsFromNode(node), node.isLit(), isCentre);
-            ps.setScale(sf::Vector2f(m_scale, m_scale));
-            m_points.emplace_back(std::move(ps));
-            ++idx;
-        }
+    float scale = std::min(targetW / boardW, targetH / boardH);
+    return std::min(scale, 1.2f);
+}
+
+void BoardRenderer::createPointShapes(sf::Vector2f windowSize, const Board& board, const sf::FloatRect& bounds) {
+
+    sf::Vector2f boardCenter = bounds.position + (bounds.size / 2.0f);
+    sf::Vector2f windowCenter = windowSize / 2.0f;
+
+    for (int i = 0; i < board.nodeCount(); ++i) {
+        auto [lx, ly] = board.getNodePosition(i);
+
+        // Logical to screen conversion
+        sf::Vector2f screenPos = (sf::Vector2f(lx, ly) - boardCenter) * m_scale + windowCenter;
+
+        const Node& node = board.getGraph().getNode(i);
+        bool isCentre = (i == board.getCenterNodeId());
+
+        PointShape ps(screenPos, slotsFromNode(node), node.isLit(), isCentre);
+        ps.setScale({ m_scale, m_scale });
+        m_points.emplace_back(std::move(ps));
     }
 }
 

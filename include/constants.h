@@ -24,9 +24,9 @@ enum class RotationDir {
 };
 
 namespace Keywords {
-    const std::string ROWS = "ROWS";
-    const std::string ROW = "ROW";
-    const std::string CENTER = "CENTER";
-    const std::string NODE = "NODE";
-    const std::string ROTATION = "ROTATION";
+    inline const std::string ROWS = "ROWS";
+    inline const std::string ROW = "ROW";
+    inline const std::string CENTER = "CENTER";
+    inline const std::string NODE = "NODE";
+    inline const std::string ROTATION = "ROTATION";
 }

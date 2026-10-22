@@ -5,3 +5,6 @@
 /build
 .idea
 /.antigravitycli
+
+.vs/
+out/
