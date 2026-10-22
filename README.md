@@ -67,9 +67,3 @@ Once built, you can run the executable directly from the build directory:
 * **Left Click:** Rotate a bulb clockwise
 * **Right Click:** Rotate a bulb counter-clockwise
 * **Close Button (X):** Exit the game
-
-## ⚖️ License
-
-**All Rights Reserved**
-
-The source code in this repository is provided for viewing and portfolio purposes only. You are welcome to compile and play the game for personal entertainment. However, you may not copy, modify, distribute, or use this code for any other purpose.
