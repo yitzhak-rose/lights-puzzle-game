@@ -41,8 +41,8 @@ This project uses **CMake** for its build system.
 Clone the repository and build using CMake:
 
 ```bash
-git clone https://github.com/yitzhak-rose/oop2_ex04.git
-cd oop2_ex04
+git clone https://github.com/yitzhak-rose/lights-puzzle-game.git
+cd lights-puzzle-game
 
 mkdir build
 cd build
